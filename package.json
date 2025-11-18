@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite & node server.js",
-    "start:server": "node server.js",
+    "dev": "vite & node server.cjs",
+    "start:server": "node server.cjs",
     "build": "vite build",
     "preview": "vite preview"
   },
