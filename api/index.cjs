@@ -9,7 +9,7 @@ app.use(express.json());
 
 const getDb = async () => {
   const client = await clientPromise;
-  return client.db('huelva_late_events'); 
+  return client.db('huelva-late-db');
 };
 
 // GET /api/events - Get all events
@@ -42,7 +42,7 @@ app.put('/api/events/:id', async (req, res) => {
   try {
     const db = await getDb();
     const { id } = req.params;
-    const { _id, ...updatedEventData } = req.body; 
+    const { _id, ...updatedEventData } = req.body;
 
     if (!ObjectId.isValid(id)) {
       return res.status(400).json({ message: 'Invalid event ID' });
