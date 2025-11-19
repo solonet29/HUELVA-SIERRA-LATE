@@ -2,7 +2,8 @@ module.exports = {
   darkMode: 'class',
   content: [
     "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}", // Asumo que tus componentes están en una carpeta 'src'
+    "./*.{js,ts,jsx,tsx}", // Escanea archivos en la raíz como App.tsx
+    "./components/**/*.{js,ts,jsx,tsx}", // Escanea archivos dentro de la carpeta de componentes
   ],
   theme: {
     extend: {},
