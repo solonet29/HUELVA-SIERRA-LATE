@@ -1,4 +1,4 @@
-// Carga las variables de entorno desde el archivo .env
+// Carga las variables deL entorno desde el archivo .env
 require('dotenv').config();
 
 const clientPromise = require('./api/db.cjs');
