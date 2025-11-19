@@ -17,11 +17,11 @@ async function deleteDuplicateEvents() {
         // Se considera duplicado si tienen el mismo título, fecha y descripción.
         const duplicates = await eventsCollection.aggregate([
             {
-                $group: {
-                    _id: { title: "$title", date: "$date", description: "$description" }, // Campos que definen un duplicado
-                    ids: { $push: "$_id" }, // Agrupa los IDs de los documentos duplicados
-                    count: { $sum: 1 } // Cuenta cuántos hay en cada grupo
-                }
+                $group: { // Agrupamos por los campos que realmente definen un duplicado
+                    _id: { title: "$title", date: "$date" },
+                    ids: { $push: "$_id" }, // Guardamos todos los IDs de los documentos en el grupo
+                    count: { $sum: 1 } // Contamos cuántos hay
+                },
             },
             {
                 $match: {
