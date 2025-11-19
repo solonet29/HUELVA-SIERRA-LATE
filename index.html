@@ -1,141 +1,183 @@
-
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Agenda Cultural Huelva</title>
-    
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#1e3a8a">
-    <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="icon" href="/icons/icon-192.svg" type="image/svg+xml">
-    
-    <!-- Apple/iOS PWA Tags -->
-    <link rel="apple-touch-icon" href="/icons/icon-180.svg">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Huelva Cultural">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      // Set dark mode based on localStorage before the page loads to prevent FOUC
-      if (localStorage.getItem('huelva-cultural-theme') === 'light') {
-        document.documentElement.classList.remove('dark');
-      } else {
-        document.documentElement.classList.add('dark');
-      }
-      // Configure Tailwind to use the 'class' strategy for dark mode
-      tailwind.config = {
-        darkMode: 'class',
-      };
-    </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Poppins:wght@700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <style>
-      body {
-        font-family: 'Lato', sans-serif;
-      }
-      h1, h2, h3, .font-display {
-        font-family: 'Poppins', sans-serif;
-        font-weight: 700;
-      }
-      @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-      .animate-fade-in {
-        animation: fadeIn 0.5s ease-out forwards;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agenda Cultural Huelva</title>
+
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#1e3a8a">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/icon-192.svg" type="image/svg+xml">
+
+  <!-- Apple/iOS PWA Tags -->
+  <link rel="apple-touch-icon" href="/icons/icon-180.svg">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Huelva Cultural">
+
+  <script>
+    // Set dark mode based on localStorage before the page loads to prevent FOUC
+    if (localStorage.getItem('huelva-cultural-theme') === 'light') {
+      document.documentElement.classList.remove('dark');
+    } else {
+      document.documentElement.classList.add('dark');
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Poppins:wght@700;900&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <style>
+    body {
+      font-family: 'Lato', sans-serif;
+    }
+
+    h1,
+    h2,
+    h3,
+    .font-display {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
       }
 
-      /* Nueva animación más suave para la lista */
-      @keyframes fadeInUp {
-        from {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.5s ease-out forwards;
+    }
+
+    /* Nueva animación más suave para la lista */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
       }
 
-      .animate-fade-in-up {
-        opacity: 0; /* Oculto hasta que empiece la animación */
-        animation-name: fadeInUp;
-        animation-duration: 0.6s;
-        animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000); /* Ease-out suave */
-        animation-fill-mode: forwards;
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
-      
-      /* Estilos personalizados para Leaflet - TEMA CLARO (por defecto) */
-      .leaflet-popup-content-wrapper {
-        background-color: #ffffff; /* white */
-        color: #1e293b; /* slate-800 */
-        border-radius: 8px;
-        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-      }
-      .leaflet-popup-content {
-        margin: 12px;
-        font-family: 'Lato', sans-serif;
-      }
-      .leaflet-popup-tip-container .leaflet-popup-tip {
-        background-color: #ffffff; /* white */
-      }
-      .leaflet-popup-close-button {
-        color: #64748b !important; /* slate-500 */
-      }
-      .leaflet-popup-close-button:hover {
-        color: #0f172a !important; /* slate-900 */
-      }
-      .leaflet-container a.leaflet-popup-close-button {
-        font-size: 20px;
-      }
+    }
 
-      /* Estilos personalizados para Leaflet - TEMA OSCURO */
-      .dark .leaflet-popup-content-wrapper {
-        background-color: #1e293b; /* slate-800 */
-        color: #e2e8f0; /* slate-200 */
-      }
-      .dark .leaflet-popup-tip-container .leaflet-popup-tip {
-        background-color: #1e293b; /* slate-800 */
-      }
-      .dark .leaflet-popup-close-button {
-        color: #94a3b8 !important; /* slate-400 */
-      }
-      .dark .leaflet-popup-close-button:hover {
-        color: #f8fafc !important; /* slate-50 */
-      }
+    .animate-fade-in-up {
+      opacity: 0;
+      /* Oculto hasta que empiece la animación */
+      animation-name: fadeInUp;
+      animation-duration: 0.6s;
+      animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
+      /* Ease-out suave */
+      animation-fill-mode: forwards;
+    }
 
-      /* Custom Scrollbar Styling */
-      /* Works on Webkit browsers (Chrome, Safari, Edge) */
-      ::-webkit-scrollbar {
-        width: 12px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #f1f5f9; /* slate-100 */
-        border-radius: 10px;
-      }
-      .dark ::-webkit-scrollbar-track {
-        background: #0f172a; /* slate-900 */
-      }
-      ::-webkit-scrollbar-thumb {
-        background-color: #cbd5e1; /* slate-300 */
-        border-radius: 10px;
-        border: 3px solid #f1f5f9; /* slate-100 */
-      }
-      .dark ::-webkit-scrollbar-thumb {
-        background-color: #334155; /* slate-700 */
-        border-radius: 10px;
-        border: 3px solid #0f172a; /* slate-900 */
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background-color: #fb923c; /* orange-400 */
-      }
-    </style>
-<script type="importmap">
+    /* Estilos personalizados para Leaflet - TEMA CLARO (por defecto) */
+    .leaflet-popup-content-wrapper {
+      background-color: #ffffff;
+      /* white */
+      color: #1e293b;
+      /* slate-800 */
+      border-radius: 8px;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+
+    .leaflet-popup-content {
+      margin: 12px;
+      font-family: 'Lato', sans-serif;
+    }
+
+    .leaflet-popup-tip-container .leaflet-popup-tip {
+      background-color: #ffffff;
+      /* white */
+    }
+
+    .leaflet-popup-close-button {
+      color: #64748b !important;
+      /* slate-500 */
+    }
+
+    .leaflet-popup-close-button:hover {
+      color: #0f172a !important;
+      /* slate-900 */
+    }
+
+    .leaflet-container a.leaflet-popup-close-button {
+      font-size: 20px;
+    }
+
+    /* Estilos personalizados para Leaflet - TEMA OSCURO */
+    .dark .leaflet-popup-content-wrapper {
+      background-color: #1e293b;
+      /* slate-800 */
+      color: #e2e8f0;
+      /* slate-200 */
+    }
+
+    .dark .leaflet-popup-tip-container .leaflet-popup-tip {
+      background-color: #1e293b;
+      /* slate-800 */
+    }
+
+    .dark .leaflet-popup-close-button {
+      color: #94a3b8 !important;
+      /* slate-400 */
+    }
+
+    .dark .leaflet-popup-close-button:hover {
+      color: #f8fafc !important;
+      /* slate-50 */
+    }
+
+    /* Custom Scrollbar Styling */
+    /* Works on Webkit browsers (Chrome, Safari, Edge) */
+    ::-webkit-scrollbar {
+      width: 12px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      /* slate-100 */
+      border-radius: 10px;
+    }
+
+    .dark ::-webkit-scrollbar-track {
+      background: #0f172a;
+      /* slate-900 */
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background-color: #cbd5e1;
+      /* slate-300 */
+      border-radius: 10px;
+      border: 3px solid #f1f5f9;
+      /* slate-100 */
+    }
+
+    .dark ::-webkit-scrollbar-thumb {
+      background-color: #334155;
+      /* slate-700 */
+      border-radius: 10px;
+      border: 3px solid #0f172a;
+      /* slate-900 */
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background-color: #fb923c;
+      /* orange-400 */
+    }
+  </style>
+  <script type="importmap">
 {
   "imports": {
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
@@ -145,11 +187,14 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
+  <link rel="stylesheet" href="/index.css">
 </head>
+
 <body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-200 transition-colors duration-300">
-    <div id="root"></div>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script type="module" src="/index.tsx"></script>
+  <div id="root"></div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script type="module" src="/index.tsx"></script>
 </body>
+
 </html>

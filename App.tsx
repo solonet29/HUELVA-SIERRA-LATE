@@ -34,7 +34,7 @@ const App: React.FC = () => {
   const [events, setEvents] = useState<EventType[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [view, setView] = useState<'list' | 'calendar'>('list');
-  
+
   // Login and Admin State
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -47,7 +47,7 @@ const App: React.FC = () => {
   const [showMapModal, setShowMapModal] = useState(false);
   const [showInstallPwaModal, setShowInstallPwaModal] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
-  
+
   // Filter State
   const [selectedTown, setSelectedTown] = useState<string>('Todos');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -64,7 +64,7 @@ const App: React.FC = () => {
   const showToast = (message: string, icon: React.ReactNode) => {
     setToast({ message, icon });
   };
-  
+
   // FIX: Moved filtering logic before useEffect hooks to resolve the "used before declaration" error.
   // --- FILTERING LOGIC ---
 
@@ -74,10 +74,10 @@ const App: React.FC = () => {
 
   const activeFilterCount = useMemo(() => {
     return (
-        (selectedTown !== 'Todos' ? 1 : 0) +
-        (searchQuery ? 1 : 0) +
-        selectedCategories.length +
-        (dateRange.start || dateRange.end ? 1 : 0)
+      (selectedTown !== 'Todos' ? 1 : 0) +
+      (searchQuery ? 1 : 0) +
+      selectedCategories.length +
+      (dateRange.start || dateRange.end ? 1 : 0)
     );
   }, [selectedTown, searchQuery, selectedCategories, dateRange]);
 
@@ -87,12 +87,12 @@ const App: React.FC = () => {
 
     // By search query
     if (searchQuery) {
-      eventsToFilter = eventsToFilter.filter(event => 
-        event.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      eventsToFilter = eventsToFilter.filter(event =>
+        event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         event.description.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
-    
+
     // By town
     if (selectedTown !== 'Todos') {
       eventsToFilter = eventsToFilter.filter(event => event.town === selectedTown);
@@ -102,17 +102,17 @@ const App: React.FC = () => {
     if (selectedCategories.length > 0) {
       eventsToFilter = eventsToFilter.filter(event => selectedCategories.includes(event.category));
     }
-    
+
     // By date range
     if (dateRange.start || dateRange.end) {
-        eventsToFilter = eventsToFilter.filter(event => {
-            const eventDate = new Date(event.date + 'T00:00:00');
-            const startDate = dateRange.start ? new Date(dateRange.start + 'T00:00:00') : null;
-            const endDate = dateRange.end ? new Date(dateRange.end + 'T00:00:00') : null;
-            if (startDate && eventDate < startDate) return false;
-            if (endDate && eventDate > endDate) return false;
-            return true;
-        });
+      eventsToFilter = eventsToFilter.filter(event => {
+        const eventDate = new Date(event.date + 'T00:00:00');
+        const startDate = dateRange.start ? new Date(dateRange.start + 'T00:00:00') : null;
+        const endDate = dateRange.end ? new Date(dateRange.end + 'T00:00:00') : null;
+        if (startDate && eventDate < startDate) return false;
+        if (endDate && eventDate > endDate) return false;
+        return true;
+      });
     }
 
     return eventsToFilter;
@@ -127,14 +127,17 @@ const App: React.FC = () => {
 
   // Load and sort events on initial mount
   useEffect(() => {
+    // Usamos una variable de entorno para la URL de la API.
+    // Para Vite, las variables deben empezar con VITE_.
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
     const fetchEvents = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/events');
+        const response = await fetch(`${apiUrl}/api/events`);
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
         const rawEvents = await response.json();
-        
+
         const initialEventsData: EventType[] = rawEvents.map((event: any) => ({
           ...event,
           category: categoryMap[event.category] || EventCategory.OTRO,
@@ -145,10 +148,10 @@ const App: React.FC = () => {
 
         // Shuffle sponsored events for random order on each visit
         const shuffledSponsored = sponsored.sort(() => 0.5 - Math.random());
-        
+
         // Sort regular events by date
         const sortedRegular = regular.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-        
+
         setEvents([...shuffledSponsored, ...sortedRegular]);
       } catch (error) {
         console.error("Failed to fetch events:", error);
@@ -176,7 +179,7 @@ const App: React.FC = () => {
       localStorage.setItem('sierra-navidad-theme', 'light');
     }
   }, [theme]);
-  
+
   // PWA Install prompt listener
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -184,10 +187,10 @@ const App: React.FC = () => {
       deferredPrompt.current = e;
       // Show the install modal only once per session, after a small delay
       if (!sessionStorage.getItem('pwa-install-prompted')) {
-          setTimeout(() => {
-              setShowInstallPwaModal(true);
-              sessionStorage.setItem('pwa-install-prompted', 'true');
-          }, 5000); // Show after 5 seconds
+        setTimeout(() => {
+          setShowInstallPwaModal(true);
+          sessionStorage.setItem('pwa-install-prompted', 'true');
+        }, 5000); // Show after 5 seconds
       }
     };
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -199,31 +202,31 @@ const App: React.FC = () => {
     // When filters change, scroll to the top of the list so the user can see the new results.
     // This runs when filteredEvents or the view (list/calendar) changes.
     if (!selectedEventId && listWrapperRef.current) {
-        // A small delay ensures the DOM has updated before we calculate positions.
-        setTimeout(() => {
-            if (listWrapperRef.current) {
-                const header = document.querySelector('header');
-                const headerHeight = header ? header.offsetHeight : 80; // Default height as a fallback
-                const elementTopPosition = listWrapperRef.current.getBoundingClientRect().top + window.scrollY;
-                
-                window.scrollTo({
-                    top: elementTopPosition - headerHeight - 16, // 1rem margin below sticky header
-                    behavior: 'smooth',
-                });
-            }
-        }, 50);
+      // A small delay ensures the DOM has updated before we calculate positions.
+      setTimeout(() => {
+        if (listWrapperRef.current) {
+          const header = document.querySelector('header');
+          const headerHeight = header ? header.offsetHeight : 80; // Default height as a fallback
+          const elementTopPosition = listWrapperRef.current.getBoundingClientRect().top + window.scrollY;
+
+          window.scrollTo({
+            top: elementTopPosition - headerHeight - 16, // 1rem margin below sticky header
+            behavior: 'smooth',
+          });
+        }
+      }, 50);
     }
   }, [view, filteredEvents]);
 
 
   // --- HANDLERS ---
-  
+
   const handleSelectEvent = (eventId: string) => {
     setSelectedEventId(eventId);
     setView('list'); // Switch to list view to show details
     setShowMapModal(false);
   };
-  
+
   const handleBackToList = () => {
     setSelectedEventId(null);
   };
@@ -231,18 +234,18 @@ const App: React.FC = () => {
   const handlePwaInstall = () => {
     setShowInstallPwaModal(false);
     if (deferredPrompt.current) {
-        deferredPrompt.current.prompt();
-        deferredPrompt.current.userChoice.then((choiceResult: { outcome: string }) => {
-            if (choiceResult.outcome === 'accepted') {
-                console.log('User accepted the A2HS prompt');
-            }
-            deferredPrompt.current = null;
-        });
+      deferredPrompt.current.prompt();
+      deferredPrompt.current.userChoice.then((choiceResult: { outcome: string }) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted the A2HS prompt');
+        }
+        deferredPrompt.current = null;
+      });
     }
   };
-  
+
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
-  
+
   const handleCategoryToggle = (category: EventCategory) => {
     setSelectedCategories(prev =>
       prev.includes(category)
@@ -250,24 +253,24 @@ const App: React.FC = () => {
         : [...prev, category]
     );
   };
-  
+
   const resetFilters = () => {
     setSelectedTown('Todos');
     setSearchQuery('');
     setSelectedCategories([]);
     setDateRange({ start: null, end: null });
   };
-  
+
   const handleDateChange = (start: string | null, end: string | null) => {
     setDateRange({ start, end });
   };
-  
+
   // Admin Handlers
-    const handleLogin = (email: string, password: string) => {
-      if (email === import.meta.env.VITE_ADMIN_EMAIL && password === import.meta.env.VITE_ADMIN_PASSWORD) {
-        setIsLoggedIn(true);
-        setShowLoginModal(false);
-        setLoginError(null);
+  const handleLogin = (email: string, password: string) => {
+    if (email === import.meta.env.VITE_ADMIN_EMAIL && password === import.meta.env.VITE_ADMIN_PASSWORD) {
+      setIsLoggedIn(true);
+      setShowLoginModal(false);
+      setLoginError(null);
       showToast("Sesión iniciada correctamente", ICONS.eye);
     } else {
       setLoginError("Email o contraseña incorrectos.");
@@ -283,10 +286,12 @@ const App: React.FC = () => {
     const instruction: ChangeInstruction = { action, data };
     setShowChangeRequestModal(instruction);
   };
-  
+
   const handleAddEvent = async (eventData: Omit<EventType, 'id'>) => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
     try {
-      const response = await fetch('http://localhost:3001/api/events', {
+      const response = await fetch(`${apiUrl}/api/events`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -314,7 +319,7 @@ const App: React.FC = () => {
     setEditingEvent(null);
     createChangeRequest('UPDATE', updatedEvent);
   };
-  
+
   const handleDeleteEvent = (eventId: string) => {
     setEvents(prev => prev.filter(e => e.id !== eventId));
     setEditingEvent(null);
@@ -329,16 +334,16 @@ const App: React.FC = () => {
         setView={setView}
         isMapVisible={showMapModal}
         onMapClick={() => {
-            setShowMapModal(true);
-            setSelectedEventId(null);
+          setShowMapModal(true);
+          setSelectedEventId(null);
         }}
         theme={theme}
         toggleTheme={toggleTheme}
       />
-      
+
       <main className="container mx-auto px-4 relative">
         {!selectedEventId && <Hero />}
-        
+
         {selectedEvent ? (
           <EventDetail
             event={selectedEvent}
@@ -346,8 +351,8 @@ const App: React.FC = () => {
             isLoggedIn={isLoggedIn}
             onEdit={() => setEditingEvent(selectedEvent)}
             onCategoryFilterClick={(category) => {
-                setSelectedEventId(null);
-                setSelectedCategories([category]);
+              setSelectedEventId(null);
+              setSelectedCategories([category]);
             }}
             showToast={showToast}
           />
@@ -370,17 +375,17 @@ const App: React.FC = () => {
               </div>
             </aside>
             <div className="md:col-span-9">
-               <div className="md:hidden mb-6">
-                 <button 
-                     onClick={() => setShowMobileFilters(true)}
-                     className="w-full flex items-center justify-center gap-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold py-3 px-4 rounded-lg shadow border border-slate-200 dark:border-slate-700"
-                 >
-                     {ICONS.filter}
-                     <span>Filtros</span>
-                     {activeFilterCount > 0 && (
-                         <span className="bg-amber-400 text-slate-900 text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center">{activeFilterCount}</span>
-                     )}
-                 </button>
+              <div className="md:hidden mb-6">
+                <button
+                  onClick={() => setShowMobileFilters(true)}
+                  className="w-full flex items-center justify-center gap-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold py-3 px-4 rounded-lg shadow border border-slate-200 dark:border-slate-700"
+                >
+                  {ICONS.filter}
+                  <span>Filtros</span>
+                  {activeFilterCount > 0 && (
+                    <span className="bg-amber-400 text-slate-900 text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center">{activeFilterCount}</span>
+                  )}
+                </button>
               </div>
 
               {view === 'list' && (
@@ -399,14 +404,14 @@ const App: React.FC = () => {
           </div>
         )}
       </main>
-      
+
       <Footer
         isLoggedIn={isLoggedIn}
         onLoginClick={() => setShowLoginModal(true)}
         onLogoutClick={handleLogout}
         onAddEventClick={() => setShowAddModal(true)}
       />
-      
+
       {/* --- MODALS & TOASTS --- */}
       {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} onLogin={handleLogin} error={loginError} />}
       {showAddModal && <AddEventModal onClose={() => setShowAddModal(false)} onAddEvent={handleAddEvent} showToast={showToast} />}

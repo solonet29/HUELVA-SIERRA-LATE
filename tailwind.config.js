@@ -1,8 +1,8 @@
 module.exports = {
+  darkMode: 'class',
   content: [
     "./index.html",
-    "./App.tsx",
-    "./components/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{js,ts,jsx,tsx}", // Asumo que tus componentes están en una carpeta 'src'
   ],
   theme: {
     extend: {},
