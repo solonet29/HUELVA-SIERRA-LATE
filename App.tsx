@@ -127,12 +127,10 @@ const App: React.FC = () => {
 
   // Load and sort events on initial mount
   useEffect(() => {
-    // Usamos una variable de entorno para la URL de la API.
-    // Para Vite, las variables deben empezar con VITE_.
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
     const fetchEvents = async () => {
       try {
-        const response = await fetch(`${apiUrl}/api/events`);
+        // En producción, esto será '/api/events'. En desarrollo, Vite lo redirigirá.
+        const response = await fetch('/api/events');
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
@@ -288,10 +286,8 @@ const App: React.FC = () => {
   };
 
   const handleAddEvent = async (eventData: Omit<EventType, 'id'>) => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-
     try {
-      const response = await fetch(`${apiUrl}/api/events`, {
+      const response = await fetch('/api/events', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
