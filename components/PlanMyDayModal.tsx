@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ICONS } from '../constants';
 import { EventType } from '../types';
-import { generateItinerary } from '../services/geminiService';
 
 interface PlanMyDayModalProps {
   event: EventType;
@@ -47,9 +46,19 @@ const PlanMyDayModal: React.FC<PlanMyDayModalProps> = ({ event, onClose }) => {
   useEffect(() => {
     const fetchItinerary = async () => {
       try {
-        const result = await generateItinerary(event);
-        if (result) {
-          setPlan(result);
+        const response = await fetch('/api/generate-itinerary', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ event }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Error en el servidor de la IA.');
+        }
+        const data = await response.json();
+        if (data.itinerary) {
+          setPlan(data.itinerary);
         } else {
           setError('No se pudo generar un plan. Inténtalo de nuevo.');
         }
@@ -81,20 +90,20 @@ const PlanMyDayModal: React.FC<PlanMyDayModalProps> = ({ event, onClose }) => {
     const startDate = new Date(event.date + 'T00:00:00');
     const endDate = new Date(startDate);
     endDate.setDate(startDate.getDate() + 1);
-    
+
     const startDateStr = startDate.toISOString().split('T')[0].replace(/-/g, '');
     const endDateStr = endDate.toISOString().split('T')[0].replace(/-/g, '');
 
     // Sanitize and prepare the description text to avoid errors
     const sanitizedPlan = plan.replace(/\*\*/g, ''); // Remove markdown asterisks
     let details = `Plan para el día del evento "${event.title}".\n\n${sanitizedPlan}`;
-    
+
     // Truncate the description to prevent the URL from becoming too long (a common cause of 400 errors)
     const MAX_URL_SAFE_LENGTH = 1800;
     if (details.length > MAX_URL_SAFE_LENGTH) {
-        details = details.substring(0, MAX_URL_SAFE_LENGTH - 3) + '...';
+      details = details.substring(0, MAX_URL_SAFE_LENGTH - 3) + '...';
     }
-    
+
     const url = new URL('https://www.google.com/calendar/render');
     url.searchParams.set('action', 'TEMPLATE');
     url.searchParams.set('text', `Día en ${event.town}`);
@@ -184,11 +193,11 @@ const PlanMyDayModal: React.FC<PlanMyDayModalProps> = ({ event, onClose }) => {
   };
 
   return (
-    <div 
-        className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 backdrop-blur-sm animate-fade-in"
-        onClick={onClose}
+    <div
+      className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 backdrop-blur-sm animate-fade-in"
+      onClick={onClose}
     >
-      <div 
+      <div
         className="bg-white dark:bg-slate-800 rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
@@ -196,11 +205,11 @@ const PlanMyDayModal: React.FC<PlanMyDayModalProps> = ({ event, onClose }) => {
           <h2 className="text-2xl font-display text-orange-800 dark:text-amber-300">Un Día en {event.town}</h2>
           <button type="button" onClick={onClose} className="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white">{ICONS.close}</button>
         </div>
-        
+
         <div className="flex-grow overflow-y-auto">
-            {renderContent()}
+          {renderContent()}
         </div>
-        
+
         <div className="flex justify-between items-center gap-4 p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 mt-auto">
           <div>
             {!isLoading && plan && (

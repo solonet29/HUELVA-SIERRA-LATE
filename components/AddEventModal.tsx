@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { EventType, EventCategory } from '../types';
 import { TOWNS, ICONS } from '../constants';
 import InstructionModal from './InstructionModal';
-import { parseEventsFromText } from '../services/geminiService';
 
 interface AddEventModalProps {
   onClose: () => void;
@@ -29,12 +28,12 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ onClose, onAddEvent, show
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
-    
+
     if (type === 'checkbox') {
-        const { checked } = e.target as HTMLInputElement;
-        setFormData(prev => ({ ...prev, [name]: checked }));
+      const { checked } = e.target as HTMLInputElement;
+      setFormData(prev => ({ ...prev, [name]: checked }));
     } else {
-        setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData(prev => ({ ...prev, [name]: value }));
     }
   };
 
@@ -56,7 +55,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ onClose, onAddEvent, show
     setFormData(prev => ({ ...prev, imageUrl: '' }));
     const fileInput = document.getElementById('imageUpload') as HTMLInputElement;
     if (fileInput) {
-        fileInput.value = '';
+      fileInput.value = '';
     }
   };
 
@@ -69,7 +68,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ onClose, onAddEvent, show
     }
     onAddEvent(formData);
   };
-  
+
   const handleAiButtonClick = () => {
     if (!navigator.onLine) {
       showToast("Necesitas conexión a internet para usar esta función.", ICONS.wifiOff);
@@ -82,11 +81,23 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ onClose, onAddEvent, show
     setIsParsing(true);
     setParseError(null);
     try {
-      const parsedEvents = await parseEventsFromText(text);
+      const response = await fetch('/api/parse-events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error en el servidor de la IA.');
+      }
+
+      const parsedEvents = await response.json();
+
       if (parsedEvents && parsedEvents.length > 0) {
         parsedEvents.forEach(event => {
           if (event.title && event.town && event.date && event.category && event.description) {
-             onAddEvent(event);
+            onAddEvent(event);
           }
         });
         // The modal will be closed by the onAddEvent handler in App.tsx
@@ -115,22 +126,22 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ onClose, onAddEvent, show
           </div>
 
           <div className="p-6 space-y-4 overflow-y-auto">
-             <button
-                type="button"
-                onClick={handleAiButtonClick}
-                className="w-full flex items-center justify-center gap-2 bg-purple-600 text-white font-bold py-3 px-4 rounded-md hover:bg-purple-500 transition-colors mb-4"
-              >
-                {ICONS.magic}
-                <span>Añadir Múltiples Eventos con IA</span>
-              </button>
+            <button
+              type="button"
+              onClick={handleAiButtonClick}
+              className="w-full flex items-center justify-center gap-2 bg-purple-600 text-white font-bold py-3 px-4 rounded-md hover:bg-purple-500 transition-colors mb-4"
+            >
+              {ICONS.magic}
+              <span>Añadir Múltiples Eventos con IA</span>
+            </button>
 
-             <div className="relative my-4">
-                <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                    <div className="w-full border-t border-slate-200 dark:border-slate-700" />
-                </div>
-                <div className="relative flex justify-center">
-                    <span className="bg-white dark:bg-slate-800 px-2 text-sm text-slate-500">O añade uno manualmente</span>
-                </div>
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                <div className="w-full border-t border-slate-200 dark:border-slate-700" />
+              </div>
+              <div className="relative flex justify-center">
+                <span className="bg-white dark:bg-slate-800 px-2 text-sm text-slate-500">O añade uno manualmente</span>
+              </div>
             </div>
 
             <div>
@@ -142,7 +153,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ onClose, onAddEvent, show
               <label htmlFor="description" className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">Descripción *</label>
               <textarea name="description" id="description" rows={3} value={formData.description} onChange={handleChange} className="w-full p-2 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-amber-400 focus:border-amber-400" required></textarea>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="town" className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">Pueblo *</label>
@@ -157,12 +168,12 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ onClose, onAddEvent, show
             </div>
 
             <div>
-                <label htmlFor="category" className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">Categoría *</label>
-                <select name="category" id="category" value={formData.category} onChange={handleChange} className="w-full p-2 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-amber-400 focus:border-amber-400" required>
+              <label htmlFor="category" className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">Categoría *</label>
+              <select name="category" id="category" value={formData.category} onChange={handleChange} className="w-full p-2 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-amber-400 focus:border-amber-400" required>
                 {Object.values(EventCategory).map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                </select>
+              </select>
             </div>
-            
+
             <div>
               <label htmlFor="externalUrl" className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">URL Externa (Opcional)</label>
               <input type="url" name="externalUrl" id="externalUrl" value={formData.externalUrl || ''} onChange={handleChange} className="w-full p-2 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-amber-400 focus:border-amber-400" placeholder="https://..." />
@@ -170,46 +181,46 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ onClose, onAddEvent, show
             </div>
 
             <div className="flex items-center">
-                <input
-                    id="sponsored"
-                    name="sponsored"
-                    type="checkbox"
-                    checked={!!formData.sponsored}
-                    onChange={handleChange}
-                    className="h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-amber-500 focus:ring-amber-400"
-                />
-                <label htmlFor="sponsored" className="ml-2 block text-sm text-slate-700 dark:text-slate-300">
-                    Marcar como evento destacado
-                </label>
+              <input
+                id="sponsored"
+                name="sponsored"
+                type="checkbox"
+                checked={!!formData.sponsored}
+                onChange={handleChange}
+                className="h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-amber-500 focus:ring-amber-400"
+              />
+              <label htmlFor="sponsored" className="ml-2 block text-sm text-slate-700 dark:text-slate-300">
+                Marcar como evento destacado
+              </label>
             </div>
 
             <div>
               <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">Imagen del Evento (Opcional)</label>
               <div className="mt-2 flex items-center gap-4">
                 {imagePreview ? (
-                    <img src={imagePreview} alt="Previsualización" className="h-20 w-20 rounded-md object-cover" />
+                  <img src={imagePreview} alt="Previsualización" className="h-20 w-20 rounded-md object-cover" />
                 ) : (
-                    <div className="h-20 w-20 rounded-md bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-400 dark:text-slate-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                    </div>
+                  <div className="h-20 w-20 rounded-md bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-400 dark:text-slate-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                  </div>
                 )}
                 <div className="flex flex-col gap-2">
-                    <input
-                        id="imageUpload"
-                        name="imageUpload"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        className="hidden"
-                    />
-                    <label htmlFor="imageUpload" className="cursor-pointer bg-slate-500 dark:bg-slate-600 text-white font-bold py-2 px-4 rounded-md hover:bg-slate-600 dark:hover:bg-slate-500 transition-colors text-sm">
-                        Seleccionar Archivo
-                    </label>
-                    {imagePreview && (
-                        <button type="button" onClick={handleRemoveImage} className="text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 text-sm font-semibold text-left">
-                            Quitar Imagen
-                        </button>
-                    )}
+                  <input
+                    id="imageUpload"
+                    name="imageUpload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
+                  <label htmlFor="imageUpload" className="cursor-pointer bg-slate-500 dark:bg-slate-600 text-white font-bold py-2 px-4 rounded-md hover:bg-slate-600 dark:hover:bg-slate-500 transition-colors text-sm">
+                    Seleccionar Archivo
+                  </label>
+                  {imagePreview && (
+                    <button type="button" onClick={handleRemoveImage} className="text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 text-sm font-semibold text-left">
+                      Quitar Imagen
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
