@@ -263,11 +263,11 @@ const App: React.FC = () => {
   };
   
   // Admin Handlers
-  const handleLogin = (email: string, password: string) => {
-    if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-      setIsLoggedIn(true);
-      setShowLoginModal(false);
-      setLoginError(null);
+    const handleLogin = (email: string, password: string) => {
+      if (email === import.meta.env.VITE_ADMIN_EMAIL && password === import.meta.env.VITE_ADMIN_PASSWORD) {
+        setIsLoggedIn(true);
+        setShowLoginModal(false);
+        setLoginError(null);
       showToast("Sesión iniciada correctamente", ICONS.eye);
     } else {
       setLoginError("Email o contraseña incorrectos.");
