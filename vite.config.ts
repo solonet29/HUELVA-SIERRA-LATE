@@ -1,17 +1,8 @@
 import path from 'path';
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { env } from 'process';
 
-export default defineConfig(({ mode }) => {
-  // Carga las variables de entorno desde el archivo .env
-  const env = loadEnv(mode, process.cwd(), '');
-
-  // Crea un objeto para definir las variables en el cliente
-  const envWithProcessPrefix = {
-    'import.meta.env': JSON.stringify(env),
-  };
-
+export default defineConfig({
   return {
     server: {
       port: 3000,
@@ -25,11 +16,11 @@ export default defineConfig(({ mode }) => {
       }
     },
     plugins: [react()],
-    define: envWithProcessPrefix,
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
       }
     }
   };
+});
 });
