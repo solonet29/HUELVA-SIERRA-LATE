@@ -12,14 +12,14 @@ app.use(express.json());
 
 const getDb = async () => {
   const client = await clientPromise;
-  return client.db('agenda_cultural');
+  return client.db('huelva_late_events');
 };
 
 // GET /api/events - Get all events
 app.get('/api/events', async (req, res) => {
   try {
     const db = await getDb();
-    const events = await db.collection('events').find({}).toArray();
+    const events = await db.collection('eventos').find({}).toArray();
     res.json(events);
   } catch (error) {
     console.error('Error fetching events:', error);
@@ -32,7 +32,7 @@ app.post('/api/events', async (req, res) => {
   try {
     const db = await getDb();
     const newEvent = req.body;
-    const result = await db.collection('events').insertOne(newEvent);
+    const result = await db.collection('eventos').insertOne(newEvent);
     res.status(201).json({ ...newEvent, _id: result.insertedId });
   } catch (error) {
     console.error('Error creating event:', error);
@@ -51,7 +51,7 @@ app.put('/api/events/:id', async (req, res) => {
       return res.status(400).json({ message: 'Invalid event ID' });
     }
 
-    const result = await db.collection('events').updateOne(
+    const result = await db.collection('eventos').updateOne(
       { _id: new ObjectId(id) },
       { $set: updatedEventData }
     );
@@ -77,7 +77,7 @@ app.delete('/api/events/:id', async (req, res) => {
       return res.status(400).json({ message: 'Invalid event ID' });
     }
 
-    const result = await db.collection('events').deleteOne({ _id: new ObjectId(id) });
+    const result = await db.collection('eventos').deleteOne({ _id: new ObjectId(id) });
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ message: 'Event not found' });
