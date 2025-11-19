@@ -1,29 +1,9 @@
 {
   "version": 2,
-  "env": {
-    "MONGODB_URI": "mongodb+srv://hola:Ang2lyl4l125@duende-cluster.fafouol.mongodb.net/?retryWrites=true&w=majority&appName=duende-cluster"
-  },
-  "builds": [
+  "rewrites": [
     {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
-    },
-    {
-      "src": "api/index.cjs",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "api/index.cjs"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
+      "source": "/api/(.*)",
+      "destination": "/api/index.cjs"
     }
   ]
 }
