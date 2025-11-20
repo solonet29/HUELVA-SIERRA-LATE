@@ -1,6 +1,7 @@
 const express = require('express');
 const { MongoClient } = require('mongodb');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -17,6 +18,10 @@ if (!mongoUri) {
 // Middleware
 app.use(cors()); // Habilita CORS para todas las rutas
 app.use(express.json()); // Permite al servidor entender JSON
+
+// ---- PARA PRODUCCIÓN ----
+// Sirve los archivos estáticos de React generados en la carpeta 'dist'
+app.use(express.static(path.join(__dirname, 'dist')));
 
 let db;
 
@@ -35,6 +40,12 @@ app.get('/api/events', async (req, res) => {
   }
   const events = await db.collection('events').find().toArray(); // El nombre de la colección es 'events'
   res.json(events);
+});
+
+// ---- PARA PRODUCCIÓN ----
+// Cualquier otra petición que no sea a la API, devuelve el index.html de React
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 app.listen(port, () => {
