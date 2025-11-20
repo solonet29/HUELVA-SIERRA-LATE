@@ -24,7 +24,7 @@ let db;
 MongoClient.connect(mongoUri)
   .then(client => {
     console.log('Conectado a la base de datos MongoDB');
-    db = client.db('HUELVA-LSTE-DB'); // Asegúrate de que el nombre de la BD es correcto
+    db = client.db('huelva-late-db'); // Corregido al nombre correcto de la base de datos
   })
   .catch(error => console.error('No se pudo conectar a MongoDB', error));
 
