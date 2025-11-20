@@ -1,24 +1,13 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": [
-          "dist/**"
-        ]
-      }
-    }
-  ],
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "server.cjs"
+      "source": "/api/:path*",
+      "destination": "/api/index.cjs"
     },
     {
-      "src": "/(.*)",
-      "dest": "server.cjs"
+      "source": "/:path*",
+      "destination": "/index.html"
     }
   ]
 }
